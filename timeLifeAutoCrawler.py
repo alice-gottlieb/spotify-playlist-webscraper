@@ -1,7 +1,7 @@
 import scrapy
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
-import re
+import unidecode
 
 class TimeLifeAutoCrawler(CrawlSpider):
 	r'''Crawl from the music page and parse all products.
@@ -20,4 +20,11 @@ class TimeLifeAutoCrawler(CrawlSpider):
 	rules = (Rule(LinkExtractor(allow=('products/', )), callback='albumParse'),)
 
 	def albumParse(self, response):
-		yield {'link': response.url}
+		# Loop through each track
+		for track in response.css('td.track-info'):
+			# Album name is contained in page title before ' -'
+			albumName = unidecode.unidecode(response.css('title::text').get().split(' -')[0])
+			trackTitle = unidecode.unidecode(track.css('span.track-title::text').get())
+			trackArtist = unidecode.unidecode(track.css('span.track-artist::text').get())
+			if (albumName is not None and trackTitle is not None and trackArtist is not None):
+				yield {'albumName': albumName, 'Title': trackTitle, 'Artist': trackArtist}
