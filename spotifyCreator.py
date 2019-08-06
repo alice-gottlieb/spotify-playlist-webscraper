@@ -10,6 +10,20 @@ REDIRECT_URI='http://localhost:8888/'
 scope = 'user-library-read playlist-modify-public playlist-read-private'
 songTestLink = 'spotify:track:3MECtlvsjOopA66odGHa5P'
 
+def createPlaylists(jsonData, spot, user):
+	r'''Create a playlist for every unique album.
+	
+	Arguments:
+	jsonData -- data extracted by timeLifeAutoCrawler.py including Album Name, Track Name, and Artist
+	spot -- authenticated spotify object
+	user -- username
+	'''
+	
+	albumNames = set([track['albumName'] for track in data])
+	for albumName in albumNames:
+		print(spot.user_playlist_create(user, albumName))
+		
+
 #get username from console
 if len(sys.argv) > 1:
     username = sys.argv[1]
@@ -24,24 +38,4 @@ with open('autoCrawler.json', 'r') as crawlerFile:
 	
 	if token:
 		spotify = sp.Spotify(auth=token)
-		playlists = spotify.user_playlists(username)
-		for playlist in playlists['items']:
-			if playlist['owner']['id'] == username:
-				print(playlist['name'])
-				print('  total tracks', playlist['tracks']['total'])
-				tracks = spotify.user_playlist(username, playlist['id'], fields='tracks')['tracks']
-				i = 0
-				for track in tracks['items']:
-					print(track['track']['name'])
-					i += 1
-					if i == 10:
-						break
-
-	# for track in data:
-		# # Get data for each track
-		# albumName = track['albumName']
-		# trackTitle = track['Title']
-		# trackArtist = track['Artist']
-		# # Spotify search
-		# # results = sp.search(q=)
-	
+		createPlaylists(data, spotify, username)
