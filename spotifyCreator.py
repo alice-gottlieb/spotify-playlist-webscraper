@@ -7,7 +7,7 @@ import spotipy.util as util
 CLIENT_ID='a66d208e17874246af021cc9b819400d'
 CLIENT_SECRET='e79e635054f9404792560a1d99eacc7b' # will be reset after use
 REDIRECT_URI='http://localhost:8888/'
-scope = 'user-library-read playlist-modify-public'
+scope = 'user-library-read playlist-modify-public playlist-read-private'
 songTestLink = 'spotify:track:3MECtlvsjOopA66odGHa5P'
 
 #get username from console
@@ -24,11 +24,18 @@ with open('autoCrawler.json', 'r') as crawlerFile:
 	
 	if token:
 		spotify = sp.Spotify(auth=token)
-		results = spotify.current_user_saved_tracks()
-		print(len(results))
-		for item in results['items']:
-			track = item['track']
-			print(track['name'] + ' - ' + track['artists'][0]['name'])
+		playlists = spotify.user_playlists(username)
+		for playlist in playlists['items']:
+			if playlist['owner']['id'] == username:
+				print(playlist['name'])
+				print('  total tracks', playlist['tracks']['total'])
+				tracks = spotify.user_playlist(username, playlist['id'], fields='tracks')['tracks']
+				i = 0
+				for track in tracks['items']:
+					print(track['track']['name'])
+					i += 1
+					if i == 10:
+						break
 
 	# for track in data:
 		# # Get data for each track
